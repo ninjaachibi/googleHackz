@@ -1,4 +1,6 @@
 import { app, BrowserWindow } from 'electron';
+// var app = require('electron')
+// var BrowserWindow = require('BrowserWindow')
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { enableLiveReload } from 'electron-compile';
 
