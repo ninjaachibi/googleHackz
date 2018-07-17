@@ -3,3 +3,15 @@
   padding: 10px;
   border: solid 2px black;
 }
+
+.align-right {
+  text-align: right;
+}
+
+.align-left {
+  text-align: left;
+}
+
+.align-center {
+  text-align: center;
+}
