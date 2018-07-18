@@ -1,5 +1,6 @@
 import React from 'react';
 import {Editor, EditorState, RichUtils, convertFromRaw} from 'draft-js';
+import DocumentPortal from './DocumentPortal'
 
 const styleMap = {
   'UPPERCASE': {
@@ -49,6 +50,7 @@ export default class Documents extends React.Component {
     return (
       <div id="content">
         <h1>Document Editor </h1>
+        <button onClick={()=>this.props.redirect(DocumentPortal)}>Back to Document Portal</button>
 
       <div className="editor">
 
