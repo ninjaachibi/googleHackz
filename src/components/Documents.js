@@ -2,6 +2,7 @@ import React from 'react';
 import {Editor, EditorState, RichUtils, convertFromRaw} from 'draft-js';
 import ColorPicker, { colorPickerPlugin } from 'draft-js-color-picker';
 import createStyles from 'draft-js-custom-styles';
+import DocumentPortal from './DocumentPortal'; 
 
 
 
@@ -91,6 +92,7 @@ export default class Documents extends React.Component {
     return (
       <div id="content">
         <h1>Document Editor </h1>
+        <button onClick={()=>this.props.redirect(DocumentPortal)}>Back to Document Portal</button>
 
         <div className="editor">
 
