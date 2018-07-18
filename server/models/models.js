@@ -13,25 +13,25 @@ let userSchema = new Schema({
   username: String,
   password: String,
   documentList: {
-    type: Array,
+    type: Array, //array of ObjectId
     default: []
   }
 })
 
 let documentSchema = new Schema({
   content: {
-    type: Array, //an Array of the edit history of the document
+    type: Array, //an Array of the edit history of the document: content state, date, which user edited
     default: []
   },
   owner: {
     type: ObjectId,
     required: true,
-    ref: "users"
+    ref: "User"
   },
   collaboratorList: {
     type: [{
       type: ObjectId,
-      ref: "users"
+      ref: "User"
     }]
   },
   title: {

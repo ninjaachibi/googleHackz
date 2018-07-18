@@ -11,6 +11,7 @@ import auth from './socket-api/auth'
 
 //MONGODB
 let User = require('./models/models').User;
+let Document = require('./models/models').Document;
 
 var mongoose = require('mongoose');
 mongoose.connection.on('connected', function() {
@@ -25,6 +26,49 @@ io.on('connection', function (socket) {
   auth(socket, (success) => {
     console.log('auth returns', success);
   }); //???
+
+  socket.on('addDocument', (data, next) => {
+    //create new document
+    let newDocument = new Document({
+      owner: data.user._id,
+      collaboratorList: [data.user._id],
+      title: data.title,
+      password: data.password,
+      createdTime: new Date(),
+      lastEditTime: new Date(),
+    });
+
+    newDocument.save()
+    .then((doc) => {
+      console.log('SUCCESSFULY SAVED NEW DOC', doc);
+      socket.emit('msg',{message: `Created new doc: ${doc._id}`})
+      next({})
+    })
+    .catch(err => {
+      console.log('ERROR', err);
+      next({err: err})
+    })
+  })
+
+  socket.on('getDocuments', (data, next) => {
+    Document.find({
+      collaboratorList: {$in: data.userId}
+    })
+      .then((docs) => {next({docs: docs})})
+      .catch(err => {next({err: err})})
+  })
+
+  socket.on('deleteDocument', (data, next) => {
+    Document.findByIdAndDelete(data.docId)
+      .then(doc => {
+        console.log('DELETED', doc);
+        next({})
+      })
+      .catch((err)=> {
+        console.log('error',err);
+        next({err: err})
+      })
+  })
 
   socket.emit('msg', { hello: 'world' });
   socket.on('cmd', onMsgReceive);
@@ -91,7 +135,6 @@ app.post('/register', (req,res) => {
 app.get('/logout', (req,res) => {
   res.json({success: true});
 })
-
 
 server.listen(3000, () => {
   console.log('LISTENING ON PORT 3000');

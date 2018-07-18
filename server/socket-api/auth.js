@@ -2,7 +2,7 @@ let User = require('../models/models').User;
 
 
 export default function auth(socket) {
-  socket.on('login', function (data, res) {
+  socket.on('login', (data, res) => {
     console.log('res is',res);
     console.log('data is',data);
 
@@ -16,7 +16,7 @@ export default function auth(socket) {
         }
         else {
           console.log('logged in!');
-          res({success: true, user: user._id})
+          res({success: true, user: user})
         }
       })
       .catch(err => {console.log('error',err)})
@@ -32,19 +32,28 @@ export default function auth(socket) {
       socket.emit('msg', {message: "passwords do not match"});
     }
     else {
-      //create new user
-      var newUser = new User({
-        username: username,
-        password: password,
-      });
+      User.findOne({username: username})
+      .then(user => {
+        if(user) {
+          socket.emit('msg', {message: "username already taken"})
+        }
+        else {
+          //create new user
+          let newUser = new User({
+            username: username,
+            password: password,
+          });
 
-      newUser.save()
-      .then((user) => {
-        console.log('SUCCESSFULY SAVED NEW USER', user);
-        socket.emit('msg',{message: `Registered as ${user.username}`})
-        socket.emit('register');
+          newUser.save()
+          .then((user) => {
+            console.log('SUCCESSFULY SAVED NEW USER', user);
+            socket.emit('msg',{message: `Registered as ${user.username}`})
+            socket.emit('register');
+          })
+          .catch(err => {console.log('ERROR', err)})
+        }
       })
-      .catch(err => {console.log('ERROR', err)})
+
     }
   });
 }

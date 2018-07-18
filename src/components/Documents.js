@@ -2,7 +2,7 @@ import React from 'react';
 import {Editor, EditorState, RichUtils, convertFromRaw} from 'draft-js';
 import ColorPicker, { colorPickerPlugin } from 'draft-js-color-picker';
 import createStyles from 'draft-js-custom-styles';
-import DocumentPortal from './DocumentPortal'; 
+import DocumentPortal from './DocumentPortal';
 
 
 
@@ -84,7 +84,6 @@ export default class Documents extends React.Component {
 
 
   render() {
-
     const options = x => x.map(fontSize => {
           return <option key={fontSize} value={fontSize}>{fontSize}</option>;
         });
@@ -92,7 +91,9 @@ export default class Documents extends React.Component {
     return (
       <div id="content">
         <h1>Document Editor </h1>
+        <h2>id: {this.props.options.docId}</h2>
         <button onClick={()=>this.props.redirect(DocumentPortal)}>Back to Document Portal</button>
+        <button onClick={()=>{}}>Save</button>
 
         <div className="editor">
 
