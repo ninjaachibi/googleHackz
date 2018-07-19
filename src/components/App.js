@@ -66,9 +66,7 @@ export default class App extends React.Component {
       React.createElement(
         this.state.connecting ? Connecting : this.state.currentPage,
         {redirect, socket, login, logout})
-      // <div>
-      //   {this.state.currentPage === "Document" ? <Document socket={this.socket}/> : null}
-      // </div>
+
     );
   }
 }

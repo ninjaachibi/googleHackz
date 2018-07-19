@@ -1,17 +1,25 @@
 .editor {
   min-height: 300px;
   padding: 10px;
-  border: solid 2px black;
+  border: solid 1px black;
+  margin: auto;
 }
 
-.align-right {
+.right-align {
   text-align: right;
 }
 
-.align-left {
-  text-align: left;
+.center-align {
+  text-align: center;
 }
 
-.align-center {
-  text-align: center;
+.toolbar {
+  border-bottom: 2px solid red;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.toolbar > * {
+  margin-right: 5px;
+  margin-top: 5px;
 }

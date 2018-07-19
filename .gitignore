@@ -2,3 +2,6 @@ node_modules
 out
 .eslintcache
 env.sh
+Docs.js
+semantic/
+semantic.json

@@ -1,150 +1,165 @@
 import React from 'react';
-import {Editor, EditorState, RichUtils, convertFromRaw} from 'draft-js';
-import ColorPicker, { colorPickerPlugin } from 'draft-js-color-picker';
-import createStyles from 'draft-js-custom-styles';
-import DocumentPortal from './DocumentPortal'; 
+import {
+  Editor,
+  EditorState,
+  RichUtils,
+  convertFromRaw,
+  DefaultDraftBlockRenderMap} from 'draft-js';
+
+import * as colors from 'material-ui/styles/colors';
+import AppBar from 'material-ui/AppBar';
+import FontIcon from 'material-ui/FontIcon';
+import RaisedButton from 'material-ui/RaisedButton';
+import Popover from 'material-ui/Popover';
+import {SwatchesPicker} from 'react-color';
+import {Map} from 'immutable';
 
 
-
-const styleMap = {
-  'UPPERCASE': {
-    textTransform: 'uppercase'
+const myBlocktypes = DefaultDraftBlockRenderMap.merge(new Map({
+  center: {
+    wrapper: <div className="center-align" />
   },
-  'LOWERCASE': {
-    textTransform: 'lowercase'
-  }
-}
-
-const presetColors = [
-  '#ff00aa',
-  '#F5A623',
-  '#F8E71C',
-  '#8B572A',
-  '#7ED321',
-  '#417505',
-  '#BD10E0',
-  '#9013FE',
-  '#4A90E2',
-  '#50E3C2',
-  '#B8E986',
-  '#000000',
-  '#4A4A4A',
-  '#9B9B9B',
-  '#FFFFFF',
-];
-
-const {styles,customStyleFn } = createStyles(['font-size'])
+    right: {
+    wrapper: <div className="left-align" />
+    }
+}))
 
 export default class Documents extends React.Component {
-
-  myBlockStyleFn(contentBlock) {
-    const type = contentBlock.getType();
-    if (type === 'right') {
-      return 'align-right';
-    }
-    if (type === 'center') {
-      return 'align-center'
-    }
-    if (type === 'left') {
-      return 'align-left'
-    }
-  }
 
   constructor(props) {
     super(props);
     this.state = {
       editorState: EditorState.createEmpty(),
+      customStyles: {}
     };
-    this.onChange = (editorState) => this.setState({editorState})
-    this.getEditorState = () => this.state.editorState;
-    this.picker = colorPickerPlugin(this.onChange, this.getEditorState);
-    this.updateEditorState = editorState => this.setState({ editorState });
-    this.toggleFontSize = this.toggleFontSize.bind(this);
   }
 
   onChange(editorState) {
-    this.setState({editorState});
+    this.setState({
+      editorState
+    });
   }
 
-  toggleFontSize(fontSize) {
-    console.log(fontSize);
-    const newEditorState = styles.fontSize.toggle(this.state.editorState, fontSize);
-    console.log(newEditorState);
-    return this.updateEditorState(newEditorState);
+  toggleInlineFormat(e, style) {
+    e.preventDefault();
+    this.setState({
+    editorState: RichUtils.toggleInlineStyle(this.state.editorState, style)
+    })
   }
 
-  toggleInlineStyle(event,inlineStyle) {
-    event.preventDefault();
-    this.onChange(RichUtils.toggleInlineStyle(this.state.editorState, inlineStyle))
-  };
+  toggleFormat(e, style, block) {
+    e.preventDefault();
+    if(block) {
+      this.setState({
+      editorState: RichUtils.toggleInlineStyle(this.state.editorState, style)
+      })
+    } else {
+      editorState: RichUtils.toggleInlineStyle(this.state.editorState, style)
+    }
+  }
 
-  toggleBlockType(event, blockType) {
-    this.onChange(RichUtils.toggleBlockType(this.state.editorState, blockType))
-  };
-
-
-  render() {
-
-    const options = x => x.map(fontSize => {
-          return <option key={fontSize} value={fontSize}>{fontSize}</option>;
-        });
-
+// dont forget block
+  formatButton({icon, style}) {
     return (
-      <div id="content">
-        <h1>Document Editor </h1>
-        <button onClick={()=>this.props.redirect(DocumentPortal)}>Back to Document Portal</button>
+      <RaisedButton
+        backgroundColor={
+          this.state.editorState.getCurrentInlineStyle().has(style) ?
+          colors.red800 :
+          colors.red200
+        }
+        icon={<FontIcon className="material-icons">{icon}</FontIcon>}
+        onMouseDown={(e) => this.toggleInlineFormat(style)}
+      />
+    )
+  }
 
-        <div className="editor">
+  changeColor(color) {
+    let newInlineStyles = Object.assign(
+      {},
+      this.state.inlineStyles,
+      {
+        [color.hex]: {
+          color: color.hex
+        }
+      }
+    );
+    this.setState({
+      inlineStyles: newInlineStyles,
+      editorState: RichUtils.toggleInlineStyle(this.state.editorState, color.hex)
+    });
+  }
+
+  openColorPicker(e) {
+    this.setState({
+      colorPickerOpen: true,
+      colorPickerButton: e.target
+    });
+  }
+
+  closeColorPicker(e) {
+    this.setState({
+      colorPickerOpen: false
+    });
+  }
+
+  colorPicker() {
+    return (
+      <div style={{display: 'inline-block'}}>
+        <RaisedButton
+          backgroundColor={colors.red200}
+          icon={<FontIcon className="material-icons">format_color_text</FontIcon>}
+          onClick={this.openColorPicker.bind(this)}
+        />
+        <Popover
+          open={this.state.colorPickerOpen}
+          anchorEl={this.state.colorPickerButton}
+          anchorOrigin={{vertical: 'bottom', horizontal: 'left'}}
+          targetOrigin={{vertical: 'top', horizontal: 'left'}}
+          onRequestClose={this.closeColorPicker.bind(this)}
+          >
+            <SwatchesPicker onChangeComplete={this.changeColor.bind(this)} />
+          </Popover>
+        </div>
+      );
+    }
+
+
+    render() {
+      return (
+        <div>
+
+          <AppBar title="Document Editor" style={{alignItems: 'center'}}>
+
+            <RaisedButton
+              icon={<FontIcon className="material-icons">home</FontIcon>}
+              onClick={()=>this.props.redirect(DocumentPortal)}
+            />
+          </AppBar>
 
           <div className="toolbar">
-            <button onMouseDown={(e) => this.toggleInlineStyle(e, 'BOLD')}>Bold</button>
-            <button onMouseDown={(e) => this.toggleInlineStyle(e, 'ITALIC')}>Italic</button>
-            <button onMouseDown={(e) => this.toggleInlineStyle(e, 'UNDERLINE')}>Underline</button>
-            <button onMouseDown={(e) => this.toggleInlineStyle(e, 'STRIKETHROUGH')}>Strikethrough</button>
-
-            <button onMouseDown={(e) => this.toggleInlineStyle(e, 'UPPERCASE')}>Uppercase</button>
-            <button onMouseDown={(e) => this.toggleInlineStyle(e, 'LOWERCASE')}>Lowercase</button>
-
-            <button onMouseDown={(e) => this.toggleBlockType(e, 'unordered-list-item')}>Unordered List</button>
-            <button onMouseDown={(e) => this.toggleBlockType(e, 'ordered-list-item')}>Ordered List</button>
-
-            <button onMouseDown={(e) => this.toggleBlockType(e, 'header-one')}>H1</button>
-            <button onMouseDown={(e) => this.toggleBlockType(e, 'header-two')}>H2</button>
-            <button onMouseDown={(e) => this.toggleBlockType(e, 'header-three')}>H3</button>
-            <button onMouseDown={(e) => this.toggleBlockType(e, 'header-four')}>H4</button>
-            <button onMouseDown={(e) => this.toggleBlockType(e, 'header-five')}>H5</button>
-            <button onMouseDown={(e) => this.toggleBlockType(e, 'header-six')}>H6</button>
-
-            <button onMouseDown={() => this.toggleBlockType(this.state.editorState, 'left')}>Left</button>
-            <button onMouseDown={() => this.toggleBlockType(this.state.editorState, 'center')}>Center</button>
-            <button onMouseDown={() => this.toggleBlockType(this.state.editorState, 'right')}>Right</button>
-
-            <button onMouseDown={()=>this.setState({editorState: EditorState.undo(this.state.editorState)})}>Undo</button>
-            <button onMouseDown={()=>this.setState({editorState: EditorState.redo(this.state.editorState)})}>Redo</button>
-
-            <select onChange={e => this.toggleFontSize(e.target.value)}>
-            {options(['6px', '8px', '10px', '12px', '14px', '16px', '18px', '20px', '22px', '24px', '26px', '28px', '30px', '32px', '34px', '36px', '50px', '72px'])}
-            </select>
-
+            {this.formatButton({icon:'format_bold', style:'BOLD'})}
+            {this.formatButton({icon:'format_italic', style:'ITALIC'})}
+            {this.formatButton({icon:'format_underlined', style: 'UNDERLINE'})}
+            {this.formatButton({icon:'format_strikethrough',style: 'STRIKETHROUGH'})}
+            {this.colorPicker()}
+            {this.formatButton({icon:'format_unordered',style: 'unordered-list-item', block: true})}
+            {this.formatButton({icon:'format_ordered',style: 'ordered-list-item', block: true})}
+            {this.formatButton({icon:'format_align_left',style: 'unstyled', block: true})}
+            {this.formatButton({icon:'format_align_center',style: 'center', block: true})}
+            {this.formatButton({icon:'format_align_right',style: 'right', block: true})}
+            {this.formatButton({icon:'undo', event: (()=>this.setState({editorState: EditorState.undo(this.state.editorState)}))})}
+            {this.formatButton({icon:'redo', event: (()=>this.setState({editorState: EditorState.undo(this.state.editorState)}))})}
           </div>
-
-          <ColorPicker
-            toggleColor={color => this.picker.addColor(color)}
-            presetColors={presetColors}
-            color={this.picker.currentColor(this.state.editorState)}
-          />
-
-          <Editor
-            editorState={this.state.editorState}
-            customStyleMap={styleMap}
-            onChange={(e) => this.onChange(e)}
-            blockStyleFn={this.myBlockStyleFn}
-            customStyleFn={this.picker.customStyleFn}
-          />
-
+          <div className="editor">
+            <Editor
+              ref="editor"
+              blockRenderMap={myBlocktypes}
+              customStyleMap={this.state.customStyles}
+              onChange={this.onChange.bind(this)}
+              editorState={this.state.editorState}
+            />
+          </div>
         </div>
-
-      </div>
-    );
+      );
+    }
   }
-}
