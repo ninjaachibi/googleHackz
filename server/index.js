@@ -84,9 +84,13 @@ io.on('connection', function (socket) {
 
   socket.on('openDocument', (data, next) => {
     console.log('data is', data);
-    socket.join(data.docId, () => {
+    if(socket.room) {
+      socket.leave(socket.room)
+    }
+    socket.room = data.docId;
+    socket.join(socket.room, () => {
       console.log(`${data.user.username} joined room`);
-      socket.to(data.docId).emit('msg', {msg: `${data.user.username} joined the room ${data.docId}`})
+      socket.to(socket.room).emit('msg', {msg: `${data.user.username} joined the room ${data.docId}`})
     })
 
     Document.findById(data.docId, (err, doc) => next({err,doc}))
@@ -94,12 +98,26 @@ io.on('connection', function (socket) {
 
   socket.on('syncContent', (data) => {
     console.log('sync is', data);
-    socket.to(data.docId).emit('syncContent', data);
+
+    socket.to(socket.room).emit('syncContent', data);
   })
 
-  socket.on('closeDocument', () => {
-
+  socket.on('saveDocument', (data) => {
+    Document.findById(data.docId)
+     .then(doc => {
+       console.log('doc is', doc);
+       const content = doc.content;
+       doc.content.push(data.raw);
+       doc.save().then(doc => {
+         console.log('saved', doc);
+       })
+     })
+     .catch(err => {console.log('error',err)})
   })
+
+  // socket.on('closeDocument', (data) => {
+  //   socket.leave(data.docId);
+  // })
 
   socket.emit('msg', { hello: 'world' });
   socket.on('cmd', onMsgReceive);

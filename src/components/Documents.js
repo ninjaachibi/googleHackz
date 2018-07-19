@@ -67,9 +67,16 @@ export default class Documents extends React.Component {
 
   componentDidMount () {
     this.socket.emit('openDocument', {docId: this.docId, user: this.props.user }, (res) => {
-      console.log('res is ',res);
+      console.log('res is ', res);
       //set initial state of document with res
+      if(res.doc.content.length > 1 ) {
+        let raw = res.doc.content[res.doc.content.length - 1]
+        let contentState = convertFromRaw(raw);
+        this.setState({editorState: EditorState.createWithContent(contentState)});
+        console.log('loaded saved document');
+      }
     })
+
     this.socket.on('syncContent', (data) => {
       console.log('hear change from other socket', data);
       let contentState = convertFromRaw(data.raw);
@@ -79,7 +86,7 @@ export default class Documents extends React.Component {
   }
 
   componentWillUnmount () {
-    this.socket.emit('closeDocument')
+    this.socket.emit('closeDocument', {docId: this.docId, user: this.props.user })
   }
 
   onChange(editorState) {
@@ -90,6 +97,12 @@ export default class Documents extends React.Component {
     // console.log(raw);
     this.socket.emit('syncContent', {raw, docId: this.docId})
     this.setState({editorState});
+  }
+
+  onSave() {
+    let contentState = this.state.editorState.getCurrentContent();
+    let raw = convertToRaw(contentState)
+    this.socket.emit('saveDocument', {raw, docId: this.docId})
   }
 
   toggleFontSize(fontSize) {
@@ -119,7 +132,7 @@ export default class Documents extends React.Component {
         <h1>Document Editor </h1>
         <h2>id: {this.props.options.docId}</h2>
         <button onClick={()=>this.props.redirect(DocumentPortal)}>Back to Document Portal</button>
-        <button onClick={()=>{}}>Save</button>
+        <button onClick={()=>{this.onSave()}}>Save</button>
 
         <div className="editor">
 
