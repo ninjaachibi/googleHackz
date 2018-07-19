@@ -23,9 +23,7 @@ mongoose.connect(process.env.MONGODB_URI);
 io.on('connection', function (socket) {
   console.log('in connection');
 
-  auth(socket, (success) => {
-    console.log('auth returns', success);
-  }); //???
+  auth(socket);
 
   socket.on('addDocument', (data, next) => {
     //create new document
@@ -68,6 +66,41 @@ io.on('connection', function (socket) {
         console.log('error',err);
         next({err: err})
       })
+  })
+
+  socket.on('joinDocument', (data, next) => {
+    Document.findOne({_id: data.docId})
+      .then((doc) => {
+        doc.collaboratorList.push(data.user._id)
+        doc.save((err)=>{
+          next({err, doc})
+        })
+      })
+      .catch((err)=> {
+        console.log('error',err);
+        next({err})
+      })
+  })
+
+  socket.on('openDocument', (data, next) => {
+    console.log('data is', data);
+    socket.join(data.docId, () => {
+      console.log(`${data.user.username} joined room`);
+      socket.to(data.docId).emit('msg', {msg: `${data.user.username} joined the room ${data.docId}`})
+    })
+
+    Document.findById(data.docId, (err, doc) => {next({err,doc})})
+      // .then((doc) => {
+      //   console.log('found doc we are trying to open', doc);
+      //   next({doc})
+      // })
+      // .catch((err) => {
+      //   next({err})
+      // })
+  })
+
+  socket.on('closeDocument', () => {
+
   })
 
   socket.emit('msg', { hello: 'world' });

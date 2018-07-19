@@ -8,6 +8,7 @@ class DocumentPortal extends React.Component {
     this.state = {
       documents: [],
       title: '',
+      shareId: '',
     };
     this.addDocument = this.addDocument.bind(this);
     this.ontitleChange = this.ontitleChange.bind(this);
@@ -48,6 +49,10 @@ class DocumentPortal extends React.Component {
     this.props.redirect(Document, {docId})
   }
 
+  joinDocument (shareId) {
+    this.props.socket.emit('joinDocument', {docId: shareId, user: this.props.user}, this.refresh)
+  }
+
   render() {
     console.log('user in docPortal', this.props.user);
     console.log('docs', this.state.documents);
@@ -70,6 +75,11 @@ class DocumentPortal extends React.Component {
             ))}
           </div>
         </div>
+        <input placeholder="paste a doc id shared with you"
+          value={this.state.shareId}
+          onChange={(e)=>this.setState({shareId:e.target.value})}
+        />
+        <button onClick={()=>{this.joinDocument(this.state.shareId)}}>Add new document</button>
       </div>
     );
   }

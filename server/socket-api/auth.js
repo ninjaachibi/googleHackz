@@ -1,10 +1,7 @@
 let User = require('../models/models').User;
 
-
 export default function auth(socket) {
   socket.on('login', (data, res) => {
-    console.log('res is',res);
-    console.log('data is',data);
 
     let {username, password} = data;
     User.findOne({username: username, password: password})

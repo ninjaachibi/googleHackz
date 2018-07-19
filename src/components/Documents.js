@@ -55,11 +55,24 @@ export default class Documents extends React.Component {
     this.state = {
       editorState: EditorState.createEmpty(),
     };
+    this.docId = this.props.options.docId;
+    this.socket = this.props.socket;
+
     this.onChange = (editorState) => this.setState({editorState})
     this.getEditorState = () => this.state.editorState;
     this.picker = colorPickerPlugin(this.onChange, this.getEditorState);
     this.updateEditorState = editorState => this.setState({ editorState });
     this.toggleFontSize = this.toggleFontSize.bind(this);
+  }
+
+  componentDidMount () {
+    this.socket.emit('openDocument', {docId: this.docId, user: this.props.user }, (res) => {
+      console.log(res);
+    })
+  }
+
+  componentWillUnmount () {
+    this.socket.emit('closeDocument')
   }
 
   onChange(editorState) {
