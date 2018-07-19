@@ -1,5 +1,5 @@
 import React from 'react';
-import {Editor, EditorState, RichUtils, convertFromRaw} from 'draft-js';
+import {Editor, EditorState, RichUtils, convertFromRaw, convertToRaw, ContentState} from 'draft-js';
 import ColorPicker, { colorPickerPlugin } from 'draft-js-color-picker';
 import createStyles from 'draft-js-custom-styles';
 import DocumentPortal from './DocumentPortal';
@@ -58,7 +58,7 @@ export default class Documents extends React.Component {
     this.docId = this.props.options.docId;
     this.socket = this.props.socket;
 
-    this.onChange = (editorState) => this.setState({editorState})
+    this.onChange = this.onChange.bind(this);
     this.getEditorState = () => this.state.editorState;
     this.picker = colorPickerPlugin(this.onChange, this.getEditorState);
     this.updateEditorState = editorState => this.setState({ editorState });
@@ -67,7 +67,14 @@ export default class Documents extends React.Component {
 
   componentDidMount () {
     this.socket.emit('openDocument', {docId: this.docId, user: this.props.user }, (res) => {
-      console.log(res);
+      console.log('res is ',res);
+      //set initial state of document with res
+    })
+    this.socket.on('syncContent', (data) => {
+      console.log('hear change from other socket', data);
+      let contentState = convertFromRaw(data.raw);
+      console.log('contentState is', contentState);
+      this.setState({editorState: EditorState.createWithContent(contentState)});
     })
   }
 
@@ -76,6 +83,12 @@ export default class Documents extends React.Component {
   }
 
   onChange(editorState) {
+    // console.log('in onChange');
+    let contentState = editorState.getCurrentContent();
+    // console.log('contentState', contentState);
+    let raw = convertToRaw(contentState)
+    // console.log(raw);
+    this.socket.emit('syncContent', {raw, docId: this.docId})
     this.setState({editorState});
   }
 

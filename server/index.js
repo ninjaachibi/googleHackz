@@ -89,14 +89,12 @@ io.on('connection', function (socket) {
       socket.to(data.docId).emit('msg', {msg: `${data.user.username} joined the room ${data.docId}`})
     })
 
-    Document.findById(data.docId, (err, doc) => {next({err,doc})})
-      // .then((doc) => {
-      //   console.log('found doc we are trying to open', doc);
-      //   next({doc})
-      // })
-      // .catch((err) => {
-      //   next({err})
-      // })
+    Document.findById(data.docId, (err, doc) => next({err,doc}))
+  })
+
+  socket.on('syncContent', (data) => {
+    console.log('sync is', data);
+    socket.to(data.docId).emit('syncContent', data);
   })
 
   socket.on('closeDocument', () => {
