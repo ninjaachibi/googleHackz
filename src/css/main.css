@@ -1,8 +1,9 @@
 .editor {
   min-height: 300px;
-  padding: 10px;
-  border: solid 1px black;
-  margin: auto;
+  padding: 50px;
+  border: solid 0.5px gray;
+  margin: 50px;
+  box-shadow: 10px 10px lightgray;
 }
 
 .right-align {
@@ -14,9 +15,10 @@
 }
 
 .toolbar {
-  border-bottom: 2px solid red;
+  border-bottom: 0.5px solid gray;
   padding: 10px;
   margin-bottom: 10px;
+
 }
 
 .toolbar > * {
