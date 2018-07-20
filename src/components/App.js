@@ -15,6 +15,7 @@ export default class App extends React.Component {
       currentPage: Login,
       connecting: true,
       isLogged: false,
+      user: null,
     };
     this.redirect = this.redirect.bind(this)
     this.socket = io('http://localhost:3000');
@@ -41,9 +42,11 @@ export default class App extends React.Component {
     this.socket.emit('login', {username: username, password: password}, (res) => {
       console.log('status', res);
       if(res.success) {
+        console.log('in res.succes', res.user);
         this.setState({
           isLogged: !this.state.isLogged,
           currentPage: DocumentPortal,
+          user: res.user
         })
       }
       else {
@@ -56,17 +59,21 @@ export default class App extends React.Component {
     this.setState({isLogged: false, currentPage: Login})
   }
 
-  redirect(screen) {
-    this.setState({currentPage: screen})
+  redirect(screen, options) {
+    this.setState({currentPage: screen, options: options})
   }
 
-  render() {
-    const {redirect, socket,login,logout} = this
+  render () {
+    const {redirect, socket,login,logout, state} = this;
+    const user = this.state.user, options = this.state.options;
     return (
       React.createElement(
-        this.state.connecting ? Connecting : this.state.currentPage,
-        {redirect, socket, login, logout})
-
+        this.state.connecting ? Connecting : this.state.currentPage, {
+          redirect, socket, login, logout, user, options
+        })
+      // <div>
+      //   {this.state.currentPage === "Document" ? <Document socket={this.socket}/> : null}
+      // </div>
     );
   }
 }

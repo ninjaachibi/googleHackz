@@ -4,6 +4,8 @@ import {
   EditorState,
   RichUtils,
   convertFromRaw,
+  convertToRaw,
+  ContentState,
   DefaultDraftBlockRenderMap} from 'draft-js';
 
   import * as colors from 'material-ui/styles/colors';
@@ -15,7 +17,7 @@ import {
   import {Map} from 'immutable';
   import DropDownMenu from 'material-ui/DropDownMenu';
   import MenuItem from 'material-ui/MenuItem';
-
+  import DocumentPortal from './DocumentPortal';
 
   const myBlocktypes = DefaultDraftBlockRenderMap.merge(new Map({
     center: {
@@ -24,23 +26,62 @@ import {
     right: {
       wrapper: <div className="right-align" />
     }
-  }))
+  })
+)
 
-  export default class Documents extends React.Component {
+export default class Documents extends React.Component {
 
-    constructor(props) {
-      super(props);
-      this.state = {
-        editorState: EditorState.createEmpty(),
-        inlineStyles: {}
-      };
-    }
+  constructor(props) {
+    super(props);
+    this.state = {
+      editorState: EditorState.createEmpty(),
+      inlineStyles: {}
+    };
+    this.docId = this.props.options.docId;
+    this.socket = this.props.socket;
+    this.onChange = this.onChange.bind(this);
+  }
 
-    onChange(editorState) {
-      this.setState({
-        editorState
-      });
-    }
+  componentDidMount () {
+    this.socket.emit('openDocument', {docId: this.docId, user: this.props.user }, (res) => {
+      console.log('res is ', res);
+      //set initial state of document with res
+      if(res.doc.content.length > 1 ) {
+        let raw = res.doc.content[res.doc.content.length - 1]
+        let contentState = convertFromRaw(raw);
+        this.setState({editorState: EditorState.createWithContent(contentState)});
+        console.log('loaded saved document');
+      }
+    })
+
+    this.socket.on('syncContent', (data) => {
+      console.log('hear change from other socket', data);
+      let contentState = convertFromRaw(data.raw);
+      console.log('contentState is', contentState);
+      this.setState({editorState: EditorState.createWithContent(contentState)});
+    })
+  }
+
+  componentWillUnmount () {
+    this.socket.emit('closeDocument', {docId: this.docId, user: this.props.user })
+  }
+
+  onChange(editorState) {
+    // console.log('in onChange');
+    let contentState = editorState.getCurrentContent();
+    // console.log('contentState', contentState);
+    let raw = convertToRaw(contentState)
+    // console.log(raw);
+    this.socket.emit('syncContent', {raw, docId: this.docId})
+    this.setState({editorState});
+  }
+
+  onSave() {
+    let contentState = this.state.editorState.getCurrentContent();
+    let raw = convertToRaw(contentState)
+    this.socket.emit('saveDocument', {raw, docId: this.docId})
+  }
+
 
 
     toggleFormat(e, style, block) {
@@ -213,7 +254,12 @@ import {
                   onClick={()=>this.props.redirect(DocumentPortal)}
                   backgroundColor={colors.red200}
                 />
-
+                <RaisedButton
+                  className="button"
+                  icon={<FontIcon className="material-icons">redo</FontIcon>}
+                  onClick={()=>this.onSave()}
+                  backgroundColor={colors.red200}
+                />
               </AppBar>
 
               <div className="toolbar">
@@ -227,7 +273,7 @@ import {
                   onClick={(()=>this.setState({editorState: EditorState.redo(this.state.editorState)}))}
                   backgroundColor={colors.red200}
                 />
-                {this.formatButton({ icon: 'format_bold', style: 'BOLD')}
+                {this.formatButton({ icon: 'format_bold', style: 'BOLD'})}
                 {this.formatButton({ icon: 'format_italic', style: 'ITALIC'})}
                 {this.formatButton({ icon: 'format_underlined', style: 'UNDERLINE'})}
                 {this.formatButton({ icon: 'format_strikethrough', style: 'STRIKETHROUGH'})}
