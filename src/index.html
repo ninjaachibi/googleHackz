@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="./css/main.css" type="text/css"> </link>
 </head>
 <body style="overflow: hidden; background-color: rgba(0,0,0,0); margin: 0" >
@@ -12,11 +13,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {AppContainer} from 'react-hot-loader';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+// import injectTapEventPlugin from 'event-tap-event-plugin';
 
 
 const render = () => {
   const App = require('./components/App').default;
-  ReactDOM.render(<App />, document.getElementById('App'));
+
+  // injectTapEventPlugin();
+
+  ReactDOM.render(<MuiThemeProvider>
+      <App />
+    </MuiThemeProvider>, document.getElementById('App'));
 }
 
 render();
