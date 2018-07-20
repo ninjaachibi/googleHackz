@@ -46,6 +46,10 @@ let documentSchema = new Schema({
   },
   lastEditTime: {
     type: Date
+  },
+  history: {
+    type: Array, // Array with saveTime and by whomst userId (username?) edited it 
+    default: []
   }
 }, {minimize: false});
 

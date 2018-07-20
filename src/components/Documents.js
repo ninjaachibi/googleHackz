@@ -19,6 +19,7 @@ import {
   import DropDownMenu from 'material-ui/DropDownMenu';
   import MenuItem from 'material-ui/MenuItem';
   import DocumentPortal from './DocumentPortal';
+  import History from  './History'
 
   const myBlocktypes = DefaultDraftBlockRenderMap.merge(new Map({
     center: {
@@ -27,16 +28,16 @@ import {
     right: {
       wrapper: <div className="right-align" />
     }
-  })
-)
+  }))
 
-export default class Documents extends React.Component {
+export default class Document extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
       editorState: EditorState.createEmpty(),
       inlineStyles: {},
+      title: this.props.options.title,
       search: ''
     };
     this.docId = this.props.options.docId;
@@ -321,7 +322,7 @@ export default class Documents extends React.Component {
           return (
             <div>
 
-              <AppBar title="Document Editor" style={{alignItems: 'center'}}>
+              <AppBar title={this.state.title} style={{alignItems: 'center'}}>
 
                 <input type="search"
                 onChange={ (e) => this.onChangeSearch(e)}
@@ -364,6 +365,8 @@ export default class Documents extends React.Component {
                 {this.formatButton({icon:'format_align_center',style: 'center', block: true})}
                 {this.formatButton({icon:'format_align_right',style: 'right', block: true})}
                 {this.fontSize()}
+
+                <button onClick={()=>this.props.redirect(History, {docId: this.docId})}>History</button>
 
               </div>
               <div className="editor">

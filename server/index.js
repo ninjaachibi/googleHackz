@@ -116,8 +116,8 @@ io.on('connection', function (socket) {
     Document.findById(data.docId)
      .then(doc => {
        console.log('doc is', doc);
-       const content = doc.content;
-       doc.content.push(data.raw);
+       const history = doc.history;
+       doc.history.push(data.raw);
        doc.save().then(doc => {
          console.log('saved', doc);
        })
