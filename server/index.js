@@ -99,7 +99,17 @@ io.on('connection', function (socket) {
   socket.on('syncContent', (data) => {
     console.log('sync is', data);
 
-    socket.to(socket.room).emit('syncContent', data);
+    Document.findById(data.docId)
+     .then(doc => {
+       console.log('doc is', doc);
+       const content = doc.content;
+       doc.content.push(data.raw);
+       doc.save().then(doc => {
+         console.log('saved', doc);
+         socket.to(socket.room).emit('syncContent', doc.content[doc.content.length - 1]);
+       })
+     })
+     .catch(err => {console.log('error',err)})
   })
 
   socket.on('saveDocument', (data) => {
@@ -115,9 +125,9 @@ io.on('connection', function (socket) {
      .catch(err => {console.log('error',err)})
   })
 
-  // socket.on('closeDocument', (data) => {
-  //   socket.leave(data.docId);
-  // })
+  socket.on('closeDocument', (data) => {
+    socket.leave(data.docId);
+  })
 
   socket.emit('msg', { hello: 'world' });
   socket.on('cmd', onMsgReceive);
