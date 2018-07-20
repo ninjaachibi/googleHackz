@@ -45,8 +45,8 @@ class DocumentPortal extends React.Component {
     this.props.socket.emit('deleteDocument', {docId: docId}, this.refresh)
   }
 
-  editDocument (docId) {
-    this.props.redirect(Document, {docId})
+  editDocument (docId, title) {
+    this.props.redirect(Document, {docId, title})
   }
 
   joinDocument (shareId) {
@@ -54,8 +54,8 @@ class DocumentPortal extends React.Component {
   }
 
   render() {
-    console.log('user in docPortal', this.props.user);
-    console.log('docs', this.state.documents);
+    // console.log('user in docPortal', this.props.user);
+    // console.log('docs', this.state.documents);
     return (
       <div className="document-portal">
         <h1>Document Portal</h1>
@@ -69,7 +69,7 @@ class DocumentPortal extends React.Component {
             {this.state.documents.map((doc,i) => (
               <li key={i}>
                 {`${doc.title} id:${doc._id}`}
-                <button onClick={()=>this.editDocument(doc._id)}>Edit</button>
+                <button onClick={()=>this.editDocument(doc._id, doc.title)}>Edit</button>
                 <button onClick={()=>this.deleteDocument(doc._id)}>Delete</button>
               </li>
             ))}
