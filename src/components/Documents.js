@@ -66,22 +66,27 @@ export default class Documents extends React.Component {
   }
 
   componentDidMount () {
+    let self = this;
     this.socket.emit('openDocument', {docId: this.docId, user: this.props.user }, (res) => {
       console.log('res is ', res);
       //set initial state of document with res
       if(res.doc.content.length > 1 ) {
         let raw = res.doc.content[res.doc.content.length - 1]
         let contentState = convertFromRaw(raw);
-        this.setState({editorState: EditorState.createWithContent(contentState)});
+        self.setState({editorState: EditorState.createWithContent(contentState)});
         console.log('loaded saved document');
       }
     })
 
-    this.socket.on('syncContent', (data) => {
+    this.socket.on('syncContent', async(data) => {
       console.log('hear change from other socket', data);
-      let contentState = convertFromRaw(data.raw);
-      console.log('contentState is', contentState);
-      this.setState({editorState: EditorState.createWithContent(contentState)});
+
+      let cursor = self.state.editorState.getSelection();
+      // console.log('current selection state is', cursor);
+      let contentState = convertFromRaw(data);
+      // console.log('contentState is', contentState);
+      let editorState = EditorState.forceSelection(EditorState.createWithContent(contentState), cursor);
+      await this.setState({editorState: editorState});
     })
   }
 
@@ -89,14 +94,13 @@ export default class Documents extends React.Component {
     this.socket.emit('closeDocument', {docId: this.docId, user: this.props.user })
   }
 
-  onChange(editorState) {
-    // console.log('in onChange');
+  async onChange(editorState) {
+    await this.setState({editorState});
+
     let contentState = editorState.getCurrentContent();
-    // console.log('contentState', contentState);
     let raw = convertToRaw(contentState)
     // console.log(raw);
     this.socket.emit('syncContent', {raw, docId: this.docId})
-    this.setState({editorState});
   }
 
   onSave() {
