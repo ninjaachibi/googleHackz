@@ -5,6 +5,7 @@ import {
   RichUtils,
   convertFromRaw,
   convertToRaw,
+  CompositeDecorator,
   ContentState,
   DefaultDraftBlockRenderMap} from 'draft-js';
 
@@ -36,11 +37,15 @@ export default class Document extends React.Component {
     this.state = {
       editorState: EditorState.createEmpty(),
       inlineStyles: {},
-      title: this.props.options.title
+      title: this.props.options.title,
+      search: ''
     };
     this.docId = this.props.options.docId;
     this.socket = this.props.socket;
     this.onChange = this.onChange.bind(this);
+    this.generateDecorator = this.generateDecorator.bind(this);
+    this.findWithRegex = this.findWithRegex.bind(this);
+    this.SearchHighlight = this.SearchHighlight.bind(this);
   }
 
   componentDidMount () {
@@ -186,9 +191,49 @@ export default class Document extends React.Component {
         })
       }
 
+    onChangeSearch(e){
+      const search = e.target.value;
+      this.setState({
+        search,
+        editorState: EditorState.set(this.state.editorState, { decorator: this.generateDecorator(search) }),
+      });
+    }
 
-      fontSize() {
-        return(
+    // highlightSearch(){
+    //     console.log('search', this.state.searchInput);
+    //   }
+
+
+     generateDecorator(highlightTerm)  {
+      const regex = new RegExp(highlightTerm, 'g');
+      return new CompositeDecorator([{
+        strategy: (contentBlock, callback) => {
+          if (highlightTerm !== '') {
+            this.findWithRegex(regex, contentBlock, callback);
+          }
+        },
+        component: this.SearchHighlight,
+      }])
+    }
+
+     findWithRegex(regex, contentBlock, callback) {
+      const text = contentBlock.getText();
+      let matchArr, start, end;
+      while ((matchArr = regex.exec(text)) !== null) {
+        start = matchArr.index;
+        end = start + matchArr[0].length;
+        callback(start, end);
+      }
+    }
+
+   SearchHighlight(props) {
+     console.log('serachhighlight', props)
+    return <span style={{backgroundColor: "yellow"}}>{props.children}</span>
+  }
+
+
+    fontSize() {
+        return (
           <DropDownMenu className="button"
             value={this.state.fontSize}
             onChange={this.changeFontSize.bind(this)}
@@ -246,12 +291,43 @@ export default class Document extends React.Component {
         //       </DropDownMenu>
         //     )
         //   }
+ //  generateDecorator =(highlightTerm) => {
+ //    const regex = new RegExp(highlightTerm, 'g');
+ //    return new CompositeDecorator([{
+ //      strategy: (contentBlock, callback) => {
+ //        if (highlightTerm !== '') {
+ //          this.findWithRegex(regex, contentBlock, callback);
+ //        }
+ //      },
+ //      component: this.SearchHighlight,
+ //    }])
+ //  };
+ //
+ // findWithRegex =(regex, contentBlock, callback) => {
+ //    const text = contentBlock.getText();
+ //    let matchArr, start, end;
+ //    while ((matchArr = regex.exec(text)) !== null) {
+ //      start = matchArr.index;
+ //      end = start + matchArr[0].length;
+ //      callback(start, end);
+ //    }
+ //  };
+ //
+ // SearchHighlight = (props) => {
+ //   console.log('highlighter', props)
+ //    return <span className="search-and-replace-highlight">{props.children}</span>
+ //  };
 
         render() {
           return (
             <div>
 
               <AppBar title={this.state.title} style={{alignItems: 'center'}}>
+
+                <input type="search"
+                onChange={ (e) => this.onChangeSearch(e)}
+                value={this.state.search}
+                placeholder="search"/>
 
                 <RaisedButton
                   className="button"
@@ -261,7 +337,7 @@ export default class Document extends React.Component {
                 />
                 <RaisedButton
                   className="button"
-                  icon={<FontIcon className="material-icons">redo</FontIcon>}
+                  icon={<FontIcon className="material-icons">backup</FontIcon>}
                   onClick={()=>this.onSave()}
                   backgroundColor={colors.red200}
                 />
