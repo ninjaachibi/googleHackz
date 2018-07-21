@@ -27,3 +27,35 @@
   align-items: center;
   justify-content: center;
 }
+
+.document-list-container {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  background: gray;
+  margin-right: 5px;
+}
+
+.app-container {
+  margin-right: 5px;
+  margin-top: 5px;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.document-list > * {
+  align-items: center;
+  justify-content: center;
+}
+.register-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+h1 {
+  fontFamily: 'Roboto, sans-serif';
+  padding-bottom: 20px;
+}

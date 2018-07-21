@@ -1,7 +1,20 @@
 import React from 'react';
 import Login from './Login'
-
+import TextField from 'material-ui/TextField';
+import RaisedButton from 'material-ui/RaisedButton';
+import Paper from 'material-ui/Paper';
 let User = require('../../server/models/models').User;
+
+const style = {
+  height: 600,
+  width: 600,
+  margin: 20,
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center"
+};
+
 
 class Register extends React.Component {
 
@@ -43,18 +56,46 @@ class Register extends React.Component {
     this.setState({passwordRepeat: e.target.value});
   }
 
+  login({defaultT, event, text, value, type}) {
+    return(
+      <TextField
+        hintText={defaultT}
+        floatingLabelText={text}
+        floatingLabelFixed={true}
+        value={value}
+        type={type}
+        onChange={event}
+      />
+    )
+  }
+
 
   render() {
     console.log('rendered register');
     return (
-      <div className="register-form">
-        {this.state.message ? <span>{this.state.message}</span> : null}
-        <h1>Register</h1>
-        <input placeholder="username" value={this.state.username} onChange={this.onUsernameChange}/>
-        <input placeholder="password" value={this.state.password} onChange={this.onPasswordChange}/>
-        <input placeholder="repeat password" value={this.state.passwordRepeat} onChange={this.onPasswordRepeatChange}/>
-        <button onClick={()=>{this.props.redirect(Login)}}>Go To Login</button>
-        <button onClick={this.register}>Register</button>
+      <div className="outer-register-form">
+        <div className="register-form">
+          {this.state.message ? <span>{this.state.message}</span> : null}
+          <div className="paper">
+            <Paper style={style} zDepth={5}>
+              <h1> Welcome to the JAR Editor</h1>
+              <h1>Register</h1>
+              {this.login({defaultT:"Username", text: "Username", value: this.state.username, event: this.onUsernameChange})}
+              {this.login({defaultT:"Password ", type: "password", text: "Password", value: this.state.password, event: this.onPasswordChange})}
+              {this.login({defaultT:"Repeat Password ", type: "password", text: "Repeat Password", value: this.state.passwordRepeat, event: this.onPasswordRepeatChange})}
+              <RaisedButton
+                label="Go to Login"
+                onClick={()=>{this.props.redirect(Login)}}
+                style={{margin: "10px"}}
+
+              />
+              <RaisedButton
+                label="Register"
+                onClick={this.register}
+              />
+            </Paper>
+          </div>
+        </div>
       </div>
     );
   }

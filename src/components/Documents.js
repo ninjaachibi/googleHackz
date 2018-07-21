@@ -281,7 +281,7 @@ export default class Documents extends React.Component {
                 {this.formatButton({icon:'format_list_bulleted',style: 'unordered-list-item', block: true})}
                 {this.formatButton({icon:'format_list_numbered',style: 'ordered-list-item', block: true})}
                 {this.formatButton({icon:'format_align_left',style: 'unstyled', block: true})}
-                {this.formatButton({icon:'format_align_center',style: 'center', block: true})}
+                {this.formatButton({icon:'format_align_center',style: 'center', block: true })}
                 {this.formatButton({icon:'format_align_right',style: 'right', block: true})}
                 {this.fontSize()}
 
@@ -293,6 +293,7 @@ export default class Documents extends React.Component {
                   customStyleMap={this.state.inlineStyles}
                   onChange={this.onChange.bind(this)}
                   editorState={this.state.editorState}
+                  backgroundColor={colors.grey50}
                 />
               </div>
             </div>

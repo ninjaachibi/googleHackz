@@ -54,12 +54,9 @@
     }
   },
   "dependencies": {
-    "@material-ui/core": "^1.4.0",
-    "@material/card": "^0.37.1",
     "@material/toolbar": "^0.37.1",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "contentful": "^6.1.1",
     "draft-js": "^0.10.5",
     "draft-js-color-picker": "^1.0.2",
     "draft-js-custom-styles": "^2.0.4",
